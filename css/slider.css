@@ -1,0 +1,141 @@
+/* Responsive slider with page indicators & control buttons */
+/* Github: BoboWab99 */
+/* Jan 2023 */
+
+.slider-wrapper {
+   --visible-items: 2;
+   --img-ratio: 5 / 4;
+   --slider-spacer: .35rem;
+   --scroll-padding: 1.85rem;
+   --indicator-height: .15rem;
+   --button-size: 40px;
+}
+
+.slider {
+   display: grid;
+   grid-auto-flow: column;
+   grid-auto-columns: calc((100% - (var(--slider-spacer) + 2 * var(--scroll-padding))) / var(--visible-items));
+   gap: var(--slider-spacer);
+   background: linear-gradient(#fff, #f5f5f5);
+   padding: var(--slider-spacer);
+   overflow-x: auto;
+   scroll-behavior: smooth;
+   overscroll-behavior-inline: contain;
+   border-radius: .4rem;
+}
+
+.slider-item {
+   display: grid;
+   grid-template-rows: max-content;
+   gap: var(--slider-spacer);
+   background-color: #fff;
+   padding: var(--slider-spacer);
+   border-radius: .4rem;
+   box-shadow: 0 1px 3px rgb(0 0 0 / .1);
+}
+
+.slider-item>img {
+   inline-size: 100%;
+   aspect-ratio: var(--img-ratio);
+   object-fit: cover;
+   border-radius: .25rem;
+}
+
+/* snap type */
+.snaps-inline {
+   scroll-snap-type: inline mandatory;
+   scroll-padding-inline: var(--scroll-padding);
+}
+
+.snaps-inline>* {
+   scroll-snap-align: start;
+}
+
+.btn-slide-left,
+.btn-slide-right {
+   padding: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: var(--button-size);
+   height: var(--button-size);
+   border-radius: 50%;
+   box-shadow: 0 2px 4px rgb(0 0 0 / .2);
+   z-index: 5;
+}
+
+.btn-slide-left {
+   margin-left: calc(-.25rem - var(--slider-spacer));
+}
+.btn-slide-right {
+   margin-right: calc(-.25rem - var(--slider-spacer));
+}
+
+.btn-slide-left:disabled,
+.btn-slide-right:disabled {
+   cursor: not-allowed;
+}
+
+.slider-indicators {
+   display: flex;
+   gap: .15rem;
+}
+
+.slider-indicators>li {
+   width: calc(3.5 * var(--indicator-height));
+   height: var(--indicator-height);
+   background-color: rgba(0 0 0 / .2);
+   cursor: pointer;
+}
+
+.slider-indicators>li.active {
+   background-color: rgba(0 0 0 / .8);
+}
+
+/* hide scrollbar & disable mouse scrolling */
+.slider::-webkit-scrollbar {
+   display: none;
+}
+
+.slider {
+   pointer-events: none;
+}
+
+.slider>* {
+   pointer-events: all;
+}
+
+/* media queries */
+/* sm */
+@media (min-width: 540px) {
+   .slider-wrapper {
+      --img-ratio: 5 / 3;
+   }
+}
+
+/* md */
+@media (min-width: 768px) {
+   .slider-wrapper {
+      --visible-items: 3;
+      --img-ratio: 16 / 9;
+      --slider-spacer: .75rem;
+      --scroll-padding: 4rem;
+      --indicator-height: .25rem;
+      --button-size: 50px;
+   }
+}
+
+/* lg */
+@media (min-width: 992px) {
+   .slider-wrapper {
+      --visible-items: 4;
+      --indicator-height: .275rem;
+   }
+}
+
+/* xlg */
+@media (min-width: 1200px) {
+   .slider-wrapper {
+      --visible-items: 5;
+   }
+}
