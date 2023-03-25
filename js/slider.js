@@ -26,10 +26,10 @@ function _slideTo(sliderWrapper, itemIndex) {
    else if (index > lastScrollTo) index = 0
    else behavior = 'smooth'
 
-   Array.from(slider.querySelectorAll('.slider-item'))[index].scrollIntoView({
-      behavior: behavior,
-      block: 'nearest',
-      inline: 'start'
+   const offsetLeft = Array.from(slider.querySelectorAll('.slider-item'))[index].offsetLeft
+   slider.scrollTo({
+      left: offsetLeft,
+      behavior: behavior
    })
 
    const next = index + vItemCount
