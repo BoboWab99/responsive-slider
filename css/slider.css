@@ -7,7 +7,7 @@
    --img-ratio: 5 / 4;
    --slider-spacer: .35rem;
    --scroll-padding: 1.85rem;
-   --indicator-height: .15rem;
+   --indicator-height: .275rem;
    --button-size: 40px;
 }
 
@@ -120,7 +120,6 @@
       --img-ratio: 16 / 9;
       --slider-spacer: .75rem;
       --scroll-padding: 4rem;
-      --indicator-height: .25rem;
       --button-size: 50px;
    }
 }
@@ -129,7 +128,6 @@
 @media (min-width: 992px) {
    .slider-wrapper {
       --visible-items: 4;
-      --indicator-height: .275rem;
    }
 }
 

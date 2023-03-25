@@ -2,11 +2,11 @@
 /* Github: BoboWab99 */
 /* Jan 2023 */
 
-// initialize
-_initSliders()
 
-window.addEventListener('resize', () => {
-   _initSliders()
+['DOMContentLoaded', 'resize'].forEach(s => {
+   window.addEventListener(s, () => {
+      _initSliders()
+   })
 })
 
 /**
@@ -15,52 +15,42 @@ window.addEventListener('resize', () => {
  * @param {Number} itemIndex slider item index
  */
 function _slideTo(sliderWrapper, itemIndex) {
-   const slideLeftBtn = sliderWrapper.querySelector('.btn-slide-left')
-   const slideRightBtn = sliderWrapper.querySelector('.btn-slide-right')
-   const sliderIndicators = sliderWrapper.querySelector('.slider-indicators')
-   const slider = sliderWrapper.querySelector('.slider')
-   const totalVisible = _visibleItemsCount(sliderWrapper)
+   const { slBtn, srBtn, indicators, slider, itemCount, vItemCount } = sliderEls(sliderWrapper)
 
-   Array.from(slider.children)[itemIndex].scrollIntoView({
+   Array.from(slider.querySelectorAll('.slider-item'))[itemIndex].scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
       inline: 'start'
    })
 
    // update buttons
    const firstIndex = 0
-   const lastIndex = slider.childElementCount - 1
+   const lastIndex = itemCount - 1
    const middle = itemIndex
-   const right = middle + totalVisible
-   const left = middle - totalVisible
+   const right = middle + vItemCount
+   const left = middle - vItemCount
 
    if (left < firstIndex) {
-      slideLeftBtn.disabled = true
+      slBtn.disabled = true
    } else {
-      slideLeftBtn.disabled = false
+      slBtn.disabled = false
    }
    if (lastIndex < right) {
-      slideRightBtn.disabled = true
+      srBtn.disabled = true
    } else {
-      slideRightBtn.disabled = false
+      srBtn.disabled = false
    }
-   slideLeftBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${left})`)
-   slideRightBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${right})`)
+
+   slBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${left})`)
+   srBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${right})`)
 
    // update active indicator
-   const indicatorIndex = Math.floor(itemIndex / totalVisible)
-   const targetIndicator = Array.from(sliderIndicators.children)[indicatorIndex]
+   const indicatorIndex = Math.floor(itemIndex / vItemCount)
+   const targetIndicator = Array.from(indicators.children)[indicatorIndex]
    if (!targetIndicator.classList.contains('active')) {
-      sliderIndicators.querySelector('.active').classList.remove('active')
+      indicators.querySelector('.active').classList.remove('active')
       targetIndicator.classList.add('active')
    }
-}
-
-/**
- * Reads number of visible items from css
- * @param {HTMLElement} sliderWrapper slider wrapper element
- * @returns number of visible elements in the slider
- */
-function _visibleItemsCount(sliderWrapper) {
-   return Number(getComputedStyle(sliderWrapper).getPropertyValue('--visible-items'))
 }
 
 /**
@@ -68,37 +58,50 @@ function _visibleItemsCount(sliderWrapper) {
  * @param {HTMLElement} sliderWrapper slider wrapper element
  */
 function _initSlider(sliderWrapper) {
-   const slideLeftBtn = sliderWrapper.querySelector('.btn-slide-left')
-   const slideRightBtn = sliderWrapper.querySelector('.btn-slide-right')
-   const sliderIndicators = sliderWrapper.querySelector('.slider-indicators')
-   const sliderLink = sliderWrapper.querySelector('.slider-link')
-   const slider = sliderWrapper.querySelector('.slider')
-   const totalVisible = _visibleItemsCount(sliderWrapper)
+   const { slBtn, srBtn, indicators, link, slider, itemCount, vItemCount } = sliderEls(sliderWrapper)
 
    // scroll to start
    slider.scrollLeft = 0
 
    // refresh indicators
-   if (slider.childElementCount > totalVisible) {
-      const numIndicators = Math.ceil(slider.childElementCount / totalVisible)
-      sliderIndicators.innerHTML = ''
+   indicators.innerHTML = ''
+
+   if (itemCount > vItemCount) {
+      const numIndicators = Math.ceil(itemCount / vItemCount)      
       for (let i = 0; i < numIndicators; i++) {
-         sliderIndicators.innerHTML += `<li role="button" onclick="_slideTo(this.closest('.slider-wrapper'), ${i * totalVisible})"></li>`
+         indicators.innerHTML += `<li role="button" aria-label="Slider page ${i + 1}" onclick="_slideTo(this.closest('.slider-wrapper'), ${i * vItemCount})"></li>`
       }
-      sliderIndicators.firstElementChild.classList.add('active')
+      indicators.firstElementChild.classList.add('active')
    }
 
    // control buttons
-   slideLeftBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${-1 * totalVisible})`)
-   slideRightBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${totalVisible})`)
+   slBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${-1 * vItemCount})`)
+   srBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${vItemCount})`)
 
    // disable buttons
-   slideLeftBtn.disabled = true
-   slideRightBtn.disabled = false
-   sliderLink.disabled = false
-   if (totalVisible > slider.childElementCount) {
-      slideRightBtn.disabled = true
-      sliderLink.disabled = true
+   slBtn.disabled = true
+   srBtn.disabled = false
+   link.classList.remove('disabled')
+
+   if (vItemCount >= itemCount) {
+      srBtn.disabled = true
+      link.classList.add('disabled')
+   }
+}
+
+/**
+ * @param {HTMLElement} sliderWrapper 
+ * @returns 
+ */
+function sliderEls(sliderWrapper) {
+   return {
+      slBtn: sliderWrapper.querySelector('.btn-slide-left'),
+      srBtn: sliderWrapper.querySelector('.btn-slide-right'),
+      indicators: sliderWrapper.querySelector('.slider-indicators'),
+      link: sliderWrapper.querySelector('.slider-link'),
+      slider: sliderWrapper.querySelector('.slider'),
+      itemCount: sliderWrapper.querySelectorAll('.slider-item').length,
+      vItemCount: Number(getComputedStyle(sliderWrapper).getPropertyValue('--visible-items'))
    }
 }
 

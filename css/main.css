@@ -27,3 +27,8 @@ ul {
 .fw-500 {
    font-weight: 500 !important;
 }
+
+.disabled {
+   color: #a0aeb9;
+   pointer-events: none;
+}
