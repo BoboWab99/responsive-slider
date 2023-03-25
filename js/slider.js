@@ -3,10 +3,12 @@
 /* Jan 2023 */
 
 
-['DOMContentLoaded', 'resize'].forEach(s => {
-   window.addEventListener(s, () => {
-      _initSliders()
-   })
+window.addEventListener('DOMContentLoaded', () => {
+   _initSliders(true)
+})
+
+window.addEventListener('resize', () => {
+   _initSliders(false)
 })
 
 /**
@@ -16,77 +18,93 @@
  */
 function _slideTo(sliderWrapper, itemIndex) {
    const { slBtn, srBtn, indicators, slider, itemCount, vItemCount } = sliderEls(sliderWrapper)
+   const lastScrollTo = vItemCount * (Math.ceil(itemCount / vItemCount) - 1)
+   let index = itemIndex
+   let behavior = 'instant'
 
-   Array.from(slider.querySelectorAll('.slider-item'))[itemIndex].scrollIntoView({
-      behavior: 'smooth',
+   if (index < 0) index = lastScrollTo
+   else if (index > lastScrollTo) index = 0
+   else behavior = 'smooth'
+
+   Array.from(slider.querySelectorAll('.slider-item'))[index].scrollIntoView({
+      behavior: behavior,
       block: 'nearest',
       inline: 'start'
    })
 
-   // update buttons
-   const firstIndex = 0
-   const lastIndex = itemCount - 1
-   const middle = itemIndex
-   const right = middle + vItemCount
-   const left = middle - vItemCount
+   const next = index + vItemCount
+   const prev = index - vItemCount
 
-   if (left < firstIndex) {
-      slBtn.disabled = true
-   } else {
-      slBtn.disabled = false
-   }
-   if (lastIndex < right) {
-      srBtn.disabled = true
-   } else {
-      srBtn.disabled = false
-   }
-
-   slBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${left})`)
-   srBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${right})`)
+   slBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${prev})`)
+   srBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${next})`)
 
    // update active indicator
-   const indicatorIndex = Math.floor(itemIndex / vItemCount)
+   const indicatorIndex = Math.floor(index / vItemCount)
    const targetIndicator = Array.from(indicators.children)[indicatorIndex]
-   if (!targetIndicator.classList.contains('active')) {
-      indicators.querySelector('.active').classList.remove('active')
-      targetIndicator.classList.add('active')
-   }
+   indicators.querySelector('.active').classList.remove('active')
+   targetIndicator.classList.add('active')
 }
 
 /**
  * Initializes/resets a slider
  * @param {HTMLElement} sliderWrapper slider wrapper element
+ * @param {Boolean} onload is window loading?
  */
-function _initSlider(sliderWrapper) {
+async function _initSlider(sliderWrapper, onload) {
    const { slBtn, srBtn, indicators, link, slider, itemCount, vItemCount } = sliderEls(sliderWrapper)
 
-   // scroll to start
-   slider.scrollLeft = 0
+   const __init__ = async () => {
+      // scroll to start
+      slider.scrollLeft = 0
 
-   // refresh indicators
-   indicators.innerHTML = ''
+      // refresh indicators
+      indicators.innerHTML = ''
 
-   if (itemCount > vItemCount) {
-      const numIndicators = Math.ceil(itemCount / vItemCount)      
-      for (let i = 0; i < numIndicators; i++) {
-         indicators.innerHTML += `<li role="button" aria-label="Slider page ${i + 1}" onclick="_slideTo(this.closest('.slider-wrapper'), ${i * vItemCount})"></li>`
+      if (itemCount > vItemCount) {
+         const numIndicators = Math.ceil(itemCount / vItemCount)
+         for (let i = 0; i < numIndicators; i++) {
+            indicators.innerHTML += `<li role="button" aria-label="Slider page ${i + 1}" onclick="_slideTo(this.closest('.slider-wrapper'), ${i * vItemCount})"></li>`
+         }
+         indicators.firstElementChild.classList.add('active')
       }
-      indicators.firstElementChild.classList.add('active')
+
+      // control buttons
+      slBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${-1 * vItemCount})`)
+      srBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${vItemCount})`)
+
+      // refresh cta buttons
+      slBtn.disabled = false
+      srBtn.disabled = false
+      link.classList.remove('disabled')
+
+      if (vItemCount >= itemCount) {
+         slBtn.disabled = true
+         srBtn.disabled = true
+         link.classList.add('disabled')
+      }
    }
 
-   // control buttons
-   slBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${-1 * vItemCount})`)
-   srBtn.setAttribute('onclick', `_slideTo(this.closest('.slider-wrapper'), ${vItemCount})`)
+   await __init__()
 
-   // disable buttons
-   slBtn.disabled = true
-   srBtn.disabled = false
-   link.classList.remove('disabled')
-
-   if (vItemCount >= itemCount) {
-      srBtn.disabled = true
-      link.classList.add('disabled')
+   if (onload && sliderWrapper.getAttribute('data-autoslide') == 'true') {
+      autoslide(sliderWrapper)
    }
+}
+
+/**
+ * @param {HTMLElement} sliderWrapper 
+ * @param {Number} interval 
+ */
+async function autoslide(sliderWrapper, interval = 5000) {
+   const { srBtn } = sliderEls(sliderWrapper)
+   const run = () => {
+      console.log('run...')
+      srBtn.click()
+      setTimeout(run, interval)
+   }
+   setTimeout(() => {
+      run()
+   }, (interval + 1000))
 }
 
 /**
@@ -107,9 +125,10 @@ function sliderEls(sliderWrapper) {
 
 /**
  * Initializes/resets all sliders in a page
+ * @param {Boolean} onload is window loading?
  */
-function _initSliders() {
+function _initSliders(onload) {
    document.querySelectorAll('.slider-wrapper').forEach(wrapper => {
-      _initSlider(wrapper)
+      _initSlider(wrapper, onload)
    })
 }
